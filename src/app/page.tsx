@@ -31,10 +31,13 @@ export default function HomePage() {
       <div className="flex flex-col gap-4 sm:gap-5">
         <header className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
           <div>
-            <h2>Start a game</h2>
+            <h1>
+              <span className="text-gradient-brand">
+                LazyDonut Undercover
+              </span>
+            </h1>
             <p className="text-sm text-slate-400">
-              Pick a nickname, then create a lobby or join your friends.
-            </p>
+                Want your friend group to fall apart? Let the drama begin           </p>
           </div>
           <span className="badge mt-2 sm:mt-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 mr-1" />
@@ -72,7 +75,10 @@ export default function HomePage() {
             <p className="text-xs text-slate-400">
               Got a code from a friend? Join their lobby and start bluffing.
             </p>
-            <button onClick={goJoin} className="button-primary mt-1">
+            <button
+              onClick={goJoin}
+              className="button-primary mt-1"
+            >
               Join with code
             </button>
           </div>
