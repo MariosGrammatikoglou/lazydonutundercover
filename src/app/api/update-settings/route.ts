@@ -27,10 +27,17 @@ export async function POST(req: Request) {
     );
   }
 
-  const lobby = updateLobbySettings(lobbyCode, hostId, settings);
+  const lobby = await updateLobbySettings(
+    lobbyCode,
+    hostId,
+    settings
+  );
   if (!lobby) {
     return NextResponse.json(
-      { error: 'Lobby not found, not host, or game already started' },
+      {
+        error:
+          'Lobby not found, you are not the host, or the game already started',
+      },
       { status: 400 }
     );
   }

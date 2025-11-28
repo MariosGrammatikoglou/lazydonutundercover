@@ -1,4 +1,3 @@
-// src/app/create/CreateLobbyClient.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -21,6 +20,7 @@ export default function CreateLobbyClient({
   async function handleCreate() {
     setError(null);
     setLoading(true);
+
     try {
       const res = await fetch('/api/create-lobby', {
         method: 'POST',
@@ -37,7 +37,6 @@ export default function CreateLobbyClient({
       if (!res.ok) {
         setError(data.error ?? 'Failed to create lobby');
       } else {
-        // show host code once
         alert(`Your host code (keep this safe): ${data.hostCode}`);
         try {
           localStorage.setItem(
@@ -47,14 +46,13 @@ export default function CreateLobbyClient({
         } catch {
           // ignore
         }
-
         router.push(
           `/lobby/${data.lobbyCode}?playerId=${encodeURIComponent(
             data.playerId
           )}`
         );
       }
-    } catch (e: any) {
+    } catch (e) {
       setError('Network error');
     } finally {
       setLoading(false);
@@ -64,12 +62,12 @@ export default function CreateLobbyClient({
   return (
     <div className="card">
       <h2>Create Lobby</h2>
-      <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#9ca3af' }}>
-        Host: <strong>{defaultUsername}</strong>
+      <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: '#9ca3af' }}>
+        Host: <strong>{defaultUsername || 'Host'}</strong>
       </p>
 
       <div className="form-group">
-        <label>Number of Civilians</label>
+        <label>Civilians</label>
         <input
           type="number"
           min={0}
@@ -78,7 +76,7 @@ export default function CreateLobbyClient({
         />
       </div>
       <div className="form-group">
-        <label>Number of Undercovers</label>
+        <label>Undercovers</label>
         <input
           type="number"
           min={0}
@@ -87,7 +85,7 @@ export default function CreateLobbyClient({
         />
       </div>
       <div className="form-group">
-        <label>Number of Mr. Whites</label>
+        <label>Mr Whites</label>
         <input
           type="number"
           min={0}
@@ -96,13 +94,7 @@ export default function CreateLobbyClient({
         />
       </div>
 
-      <p
-        style={{
-          marginBottom: '0.75rem',
-          fontSize: '0.85rem',
-          color: '#9ca3af',
-        }}
-      >
+      <p style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
         Total players expected: <strong>{total}</strong>
       </p>
 
@@ -110,7 +102,7 @@ export default function CreateLobbyClient({
 
       <div className="button-row" style={{ marginTop: '0.75rem' }}>
         <button onClick={handleCreate} disabled={loading || total <= 0}>
-          {loading ? 'Creating...' : 'Create & Enter Lobby'}
+          {loading ? 'Creating...' : 'Create & Enter'}
         </button>
         <button
           className="button-secondary"

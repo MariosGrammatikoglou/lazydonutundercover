@@ -1,4 +1,3 @@
-// src/app/join/JoinLobbyClient.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -15,18 +14,7 @@ export default function JoinLobbyClient({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // auto-fill host code if stored locally for this lobby
-  useEffect(() => {
-    if (!lobbyCode) return;
-    try {
-      const stored = localStorage.getItem(`hostCode:${lobbyCode}`);
-      if (stored && !hostCode) {
-        setHostCode(stored);
-      }
-    } catch {
-      // ignore
-    }
-  }, [lobbyCode, hostCode]);
+  
 
   async function handleJoin() {
     setError(null);
@@ -62,8 +50,8 @@ export default function JoinLobbyClient({
   return (
     <div className="card">
       <h2>Join Lobby</h2>
-      <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#9ca3af' }}>
-        Player: <strong>{defaultUsername}</strong>
+      <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: '#9ca3af' }}>
+        Player: <strong>{defaultUsername || 'Player'}</strong>
       </p>
 
       <div className="form-group">

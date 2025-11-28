@@ -1,4 +1,3 @@
-// src/app/api/kick-player/route.ts
 import { NextResponse } from 'next/server';
 import { eliminatePlayer, getLobby } from '@/lib/gameStore';
 
@@ -12,7 +11,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const lobby = getLobby(lobbyCode);
+  const lobby = await getLobby(lobbyCode);
   if (!lobby) {
     return NextResponse.json(
       { error: 'Lobby not found' },
@@ -27,7 +26,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = eliminatePlayer(lobbyCode, targetId);
+  const result = await eliminatePlayer(lobbyCode, targetId);
   if (!result) {
     return NextResponse.json(
       { error: 'Could not eliminate player' },

@@ -1,11 +1,11 @@
-// src/app/create/page.tsx
-import CreateLobbyClient from "./createLobbyClient";
+import CreateLobbyClient from './CreateLobbyClient';
 
 type CreatePageProps = {
-  searchParams?: { username?: string };
+  searchParams: Promise<{ username?: string }>;
 };
 
-export default function CreatePage({ searchParams }: CreatePageProps) {
-  const username = searchParams?.username ?? '';
+export default async function CreatePage({ searchParams }: CreatePageProps) {
+  const params = await searchParams;
+  const username = params?.username ?? '';
   return <CreateLobbyClient defaultUsername={username} />;
 }

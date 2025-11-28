@@ -1,11 +1,11 @@
-// src/app/join/page.tsx
 import JoinLobbyClient from './JoinLobbyClient';
 
 type JoinPageProps = {
-  searchParams?: { username?: string };
+  searchParams: Promise<{ username?: string }>;
 };
 
-export default function JoinPage({ searchParams }: JoinPageProps) {
-  const username = searchParams?.username ?? '';
+export default async function JoinPage({ searchParams }: JoinPageProps) {
+  const params = await searchParams;
+  const username = params?.username ?? '';
   return <JoinLobbyClient defaultUsername={username} />;
 }

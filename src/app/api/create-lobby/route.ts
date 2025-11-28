@@ -2,36 +2,49 @@ import { NextResponse } from 'next/server';
 import { createLobby } from '@/lib/gameStore';
 
 export async function POST(req: Request) {
-  const { username, civilians, undercovers, mrWhites } = await req.json();
+  const body = await req.json().catch(() => ({} as any));
+  const { username, civilians, undercovers, mrWhites } = body ?? {};
 
-  if (!username || typeof username !== 'string') {
-    return NextResponse.json(
-      { error: 'Username is required' },
-      { status: 400 }
-    );
-  }
+  const safeUsername =
+    typeof username === 'string' && username.trim().length > 0
+      ? username.trim()
+      : 'Host';
+
+  const c = Number.isFinite(Number(civilians)) ? Number(civilians) : 0;
+  const u = Number.isFinite(Number(undercovers)) ? Number(undercovers) : 0;
+  const m = Number.isFinite(Number(mrWhites)) ? Number(mrWhites) : 0;
 
   const settings = {
-    civilians: Number(civilians),
-    undercovers: Number(undercovers),
-    mrWhites: Number(mrWhites),
+    civilians: c,
+    undercovers: u,
+    mrWhites: m,
   };
 
-  const totalRoles =
-    settings.civilians + settings.undercovers + settings.mrWhites;
+  const totalRoles = c + u + m;
 
   if (totalRoles <= 0) {
     return NextResponse.json(
-      { error: 'Total roles must be > 0' },
+      { error: 'Total roles (civilians + undercovers + mr whites) must be > 0' },
       { status: 400 }
     );
   }
 
-  const { lobby, player, hostSecret } = createLobby(username, settings);
+  try {
+    const { lobby, player, hostSecret } = await createLobby(
+      safeUsername,
+      settings
+    );
 
-  return NextResponse.json({
-    lobbyCode: lobby.code,
-    playerId: player.id,
-    hostCode: hostSecret, // 👈 important
-  });
+    return NextResponse.json({
+      lobbyCode: lobby.code,
+      playerId: player.id,
+      hostCode: hostSecret,
+    });
+  } catch (err: any) {
+    console.error('Error in create-lobby:', err);
+    return NextResponse.json(
+      { error: 'Failed to create lobby on server' },
+      { status: 500 }
+    );
+  }
 }

@@ -2,16 +2,22 @@ import { NextResponse } from 'next/server';
 import { joinLobby } from '@/lib/gameStore';
 
 export async function POST(req: Request) {
-  const { username, lobbyCode, hostCode } = await req.json();
+  const body = await req.json().catch(() => ({} as any));
+  const { username, lobbyCode, hostCode } = body ?? {};
 
-  if (!username || !lobbyCode) {
+  if (!lobbyCode || typeof lobbyCode !== 'string') {
     return NextResponse.json(
-      { error: 'Username and lobby code are required' },
+      { error: 'Lobby code is required' },
       { status: 400 }
     );
   }
 
-  const result = joinLobby(lobbyCode, username, hostCode);
+  const safeUsername =
+    typeof username === 'string' && username.trim().length > 0
+      ? username.trim()
+      : 'Player';
+
+  const result = await joinLobby(lobbyCode, safeUsername, hostCode);
   if (!result) {
     return NextResponse.json(
       { error: 'Lobby not found or already started' },

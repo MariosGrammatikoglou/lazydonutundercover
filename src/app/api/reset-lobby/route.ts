@@ -1,4 +1,3 @@
-// src/app/api/reset-lobby/route.ts
 import { NextResponse } from 'next/server';
 import { resetLobby } from '@/lib/gameStore';
 
@@ -12,7 +11,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const lobby = resetLobby(lobbyCode, hostId);
+  const lobby = await resetLobby(lobbyCode, hostId);
   if (!lobby) {
     return NextResponse.json(
       { error: 'Lobby not found or you are not the host' },

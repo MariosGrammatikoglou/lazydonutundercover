@@ -1,4 +1,3 @@
-// src/app/api/lobby/[code]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getLobby } from '@/lib/gameStore';
 
@@ -8,7 +7,7 @@ export async function GET(
 ) {
   const { code } = await context.params;
 
-  const lobby = getLobby(code);
+  const lobby = await getLobby(code);
   if (!lobby) {
     return NextResponse.json(
       { error: 'Lobby not found' },
@@ -23,7 +22,7 @@ export async function GET(
     settings: lobby.settings,
     players: lobby.players.map((p) => ({
       id: p.id,
-      name: p.name,
+      name: p.name,          // 👈 includes username
       isHost: p.isHost,
       isEliminated: p.isEliminated,
     })),

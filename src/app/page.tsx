@@ -7,23 +7,22 @@ export default function HomePage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
 
-  const disabled = !username.trim();
+  const trimmed = username.trim();
+  const disabled = trimmed.length === 0;
 
-  const handleCreate = () => {
-    if (!disabled) {
-      router.push(`/create?username=${encodeURIComponent(username.trim())}`);
-    }
+  const goCreate = () => {
+    if (disabled) return;
+    router.push(`/create?username=${encodeURIComponent(trimmed)}`);
   };
 
-  const handleJoin = () => {
-    if (!disabled) {
-      router.push(`/join?username=${encodeURIComponent(username.trim())}`);
-    }
+  const goJoin = () => {
+    if (disabled) return;
+    router.push(`/join?username=${encodeURIComponent(trimmed)}`);
   };
 
   return (
     <div className="card">
-      <h2>Welcome 👋</h2>
+      <h2>Lazy Donut Undercover</h2>
       <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#9ca3af' }}>
         Enter your username for this session (no account, no save).
       </p>
@@ -37,12 +36,12 @@ export default function HomePage() {
         />
       </div>
 
-      <div className="button-row">
-        <button onClick={handleCreate} disabled={disabled}>
+      <div className="button-row" style={{ marginTop: '0.75rem' }}>
+        <button onClick={goCreate} disabled={disabled}>
           Create Lobby
         </button>
         <button
-          onClick={handleJoin}
+          onClick={goJoin}
           disabled={disabled}
           className="button-secondary"
         >
