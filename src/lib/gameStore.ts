@@ -165,10 +165,7 @@ function generateHostSecret(): string {
 
 // word pairs for civilian vs undercover
 const WORD_PAIRS: Array<{ civilian: string; undercover: string }> = [
-   { civilian: 'Test1', undercover: 'Test2' },
-  { civilian: 'Test3', undercover: 'Test4' },
-  { civilian: 'Test5', undercover: 'Test6' },
-  /*
+
   { civilian: 'Γάτα', undercover: 'Σκύλος' },
   { civilian: 'Καφές', undercover: 'Τσάι' },
   { civilian: 'Παράλια', undercover: 'Πισίνα' },
@@ -228,7 +225,7 @@ const WORD_PAIRS: Array<{ civilian: string; undercover: string }> = [
   { civilian: 'Λιοντάρι', undercover: 'Τίγρης' },
   { civilian: 'Καρχαρίας', undercover: 'Κροκόδειλος' },
 { civilian: 'Κουκουβάγια', undercover: 'Γεράκι' },
-  */
+  
 
 ];
 
