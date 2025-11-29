@@ -1,7 +1,7 @@
 // src/lib/gameStore.ts
 import { pool, initDb } from '@/lib/db';
 
-export type Role = 'civilian' | 'undercover' | 'mrwhite';
+export type Role = 'legit' | 'clone' | 'blind';
 
 export type Player = {
   id: string;
@@ -14,14 +14,14 @@ export type Player = {
   talkOrder?: number; // speaking order
 };
 
-export type GameStatus = 'waiting' | 'started' | 'mrwhite_guess' | 'finished';
+export type GameStatus = 'waiting' | 'started' | 'blind_guess' | 'finished';
 
-export type Winner = 'civilians' | 'undercovers' | 'mrwhite' | null;
+export type Winner = 'legits' | 'clones' | 'blind' | null;
 
 export type LobbySettings = {
-  civilians: number;
-  undercovers: number;
-  mrWhites: number;
+  legits: number;
+  clones: number;
+  blinds: number;
 };
 
 export type Lobby = {
@@ -31,10 +31,10 @@ export type Lobby = {
   players: Player[];
   settings: LobbySettings;
   status: GameStatus;
-  civilianWord?: string;
-  undercoverWord?: string;
+  legitWord?: string;
+  cloneWord?: string;
   winner: Winner;
-  pendingMrWhiteId?: string | null;
+  pendingblindId?: string | null;
   usedWordIndices: number[];
 };
 
@@ -73,26 +73,26 @@ function pruneInactivePlayers(lobby: Lobby): Lobby {
 // or if Mr White should get a guess when only 2 players remain.
 function applyAutoWin(lobby: Lobby) {
   // Don't touch if already finished or in guess phase
-  if (lobby.status === 'finished' || lobby.status === 'mrwhite_guess') return;
+  if (lobby.status === 'finished' || lobby.status === 'blind_guess') return;
 
   const alive = lobby.players.filter((p) => !p.isEliminated);
   if (alive.length === 0) return;
 
-  const aliveCivilians = alive.filter((p) => p.role === 'civilian').length;
-  const aliveUndercovers = alive.filter((p) => p.role === 'undercover').length;
-  const aliveMrWhites = alive.filter((p) => p.role === 'mrwhite').length;
+  const alivelegits = alive.filter((p) => p.role === 'legit').length;
+  const aliveclones = alive.filter((p) => p.role === 'clone').length;
+  const aliveblinds = alive.filter((p) => p.role === 'blind').length;
 
   // Special rule: if Mr White is alive and there's only 1 other player alive,
   // he gets a guess popup automatically.
   if (
     lobby.status === 'started' &&
     alive.length === 2 &&
-    aliveMrWhites === 1
+    aliveblinds === 1
   ) {
-    const mr = alive.find((p) => p.role === 'mrwhite');
+    const mr = alive.find((p) => p.role === 'blind');
     if (mr) {
-      lobby.status = 'mrwhite_guess';
-      lobby.pendingMrWhiteId = mr.id;
+      lobby.status = 'blind_guess';
+      lobby.pendingblindId = mr.id;
       console.log(
         '[GAME] Mr White guess triggered automatically (2 players left) in lobby',
         lobby.code
@@ -103,27 +103,27 @@ function applyAutoWin(lobby: Lobby) {
 
   // Normal auto-win conditions
   const aliveFactionCount =
-    (aliveCivilians > 0 ? 1 : 0) +
-    (aliveUndercovers > 0 ? 1 : 0) +
-    (aliveMrWhites > 0 ? 1 : 0);
+    (alivelegits > 0 ? 1 : 0) +
+    (aliveclones > 0 ? 1 : 0) +
+    (aliveblinds > 0 ? 1 : 0);
 
   // Only one faction left -> game ends
   if (aliveFactionCount === 1) {
-    if (aliveCivilians > 0) {
+    if (alivelegits > 0) {
       lobby.status = 'finished';
-      lobby.winner = 'civilians';
-      lobby.pendingMrWhiteId = null;
-      console.log('[GAME] Auto-win: civilians in lobby', lobby.code);
-    } else if (aliveUndercovers > 0) {
+      lobby.winner = 'legits';
+      lobby.pendingblindId = null;
+      console.log('[GAME] Auto-win: legits in lobby', lobby.code);
+    } else if (aliveclones > 0) {
       lobby.status = 'finished';
-      lobby.winner = 'undercovers';
-      lobby.pendingMrWhiteId = null;
-      console.log('[GAME] Auto-win: undercovers in lobby', lobby.code);
-    } else if (aliveMrWhites > 0) {
+      lobby.winner = 'clones';
+      lobby.pendingblindId = null;
+      console.log('[GAME] Auto-win: clones in lobby', lobby.code);
+    } else if (aliveblinds > 0) {
       lobby.status = 'finished';
-      lobby.winner = 'mrwhite';
-      lobby.pendingMrWhiteId = null;
-      console.log('[GAME] Auto-win: mrwhite in lobby', lobby.code);
+      lobby.winner = 'blind';
+      lobby.pendingblindId = null;
+      console.log('[GAME] Auto-win: blind in lobby', lobby.code);
     }
   }
 }
@@ -163,68 +163,68 @@ function generateHostSecret(): string {
   return String(Math.floor(1000 + Math.random() * 9000));
 }
 
-// word pairs for civilian vs undercover
-const WORD_PAIRS: Array<{ civilian: string; undercover: string }> = [
+// word pairs for legit vs clone
+const WORD_PAIRS: Array<{ legit: string; clone: string }> = [
 
-  { civilian: 'Γάτα', undercover: 'Σκύλος' },
-  { civilian: 'Καφές', undercover: 'Τσάι' },
-  { civilian: 'Παράλια', undercover: 'Πισίνα' },
-  { civilian: 'Πίτσα', undercover: 'Σουβλάκι' },
-  { civilian: 'Βενζίνη', undercover: 'Πετρέλαιο' },
-  { civilian: 'Μήλο', undercover: 'Αχλάδι' },
-  { civilian: 'Καρέκλα', undercover: 'Σκαμπό' },
-  { civilian: 'Βιβλίο', undercover: 'Τετράδιο' },
-  { civilian: 'Ποδήλατο', undercover: 'Μηχανάκι' },
-    { civilian: 'Βροχή', undercover: 'Χιόνι' },
-  { civilian: 'Σαπούνι', undercover: 'Αφρόλουτρο' },
-  { civilian: 'Κινητό', undercover: 'Τάμπλετ' },
-  { civilian: 'Τηλεόραση', undercover: 'Ραδιόφωνο' },
-  { civilian: 'Κοτόπουλο', undercover: 'Ψάρι' },
-  { civilian: 'Ζάχαρη', undercover: 'Αλάτι' },
-  { civilian: 'Λεωφορείο', undercover: 'Νταλίκα' },
-  { civilian: 'Φωτογραφία', undercover: 'Βίντεο' },
-  { civilian: 'Αυτοκίνητο', undercover: 'Τρένο' },
-  { civilian: 'Μαγιό', undercover: 'Σορτσάκι' },
-   { civilian: 'Τραπέζι', undercover: 'Γραφείο' },
-  { civilian: 'Ποτήρι', undercover: 'Καλαμάκι' },
-  { civilian: 'Καπέλο', undercover: 'Σκουφί' },
-  { civilian: 'Μπύρα', undercover: 'Κρασί' },
-  { civilian: 'Ψυγείο', undercover: 'Καταψύκτης' },
-  { civilian: 'Στεγνωτήρας', undercover: 'Πλυντήριο' },
-   { civilian: 'Λάμπα', undercover: 'Κερί' },
-  { civilian: 'Κιθάρα', undercover: 'Μπουζούκι' },
-  { civilian: 'Ομπρέλα', undercover: 'Αδιάβροχο' },
-  { civilian: 'Πορτοκάλι', undercover: 'Μανταρίνι' },
-  { civilian: 'Παπούτσια', undercover: 'Παντόφλες' },
-  { civilian: 'Βρύση', undercover: 'Ντουζιέρα' },
-  { civilian: 'Σεντόνι', undercover: 'Κουβέρτα' },
-  { civilian: 'Κήπος', undercover: 'Πάρκο' },
-  { civilian: 'Ταινία', undercover: 'Σειρά' },
-  { civilian: 'Κασετίνα', undercover: 'Τσαντάκι' },
-  { civilian: 'Πιρούνι', undercover: 'Κουτάλι' },
-  { civilian: 'Μολύβι', undercover: 'Στυλό' },
-  { civilian: 'Σανίδα', undercover: 'Ράφι' },
-  { civilian: 'Παγωτό', undercover: 'Γρανίτα' },
-  { civilian: 'Μπλούζα', undercover: 'Πουκάμισο' },
-   { civilian: 'Δέντρο', undercover: 'Θάμνος' },
-  { civilian: 'Καραμέλα', undercover: 'Σοκολάτα' },
-  { civilian: 'Φούρνος', undercover: 'Μάτι Κουζίνας' },
-  { civilian: 'Δρόμος', undercover: 'Πεζοδρόμιο' },
-  { civilian: 'Καφενείο', undercover: 'Μπαρ' },
-  { civilian: 'Πίνακας', undercover: 'Καθρέφτης' },
-  { civilian: 'Φάντα Αναψυκτικό', undercover: 'Κόκα κόλα' },
-  { civilian: 'Γιαούρτι', undercover: 'Γάλα' },
-  { civilian: 'Στυλό', undercover: 'Μαρκαδόρος' },
-  { civilian: 'Παντελόνι', undercover: 'Σορτς' },
-  { civilian: 'Κουτάβι', undercover: 'Γατάκι' },
-  { civilian: 'Τσουρέκι', undercover: 'Κέικ' },
-   { civilian: 'Μπανάνα', undercover: 'Ανανάς' }, 
-  { civilian: 'Μπουφάν', undercover: 'Ζακέτα' },
-  { civilian: 'Λεμόνι', undercover: 'Λάιμ' },
-  { civilian: 'Θάλασσα', undercover: 'Λίμνη' },
-  { civilian: 'Λιοντάρι', undercover: 'Τίγρης' },
-  { civilian: 'Καρχαρίας', undercover: 'Κροκόδειλος' },
-{ civilian: 'Κουκουβάγια', undercover: 'Γεράκι' },
+  { legit: 'Γάτα', clone: 'Σκύλος' },
+  { legit: 'Καφές', clone: 'Τσάι' },
+  { legit: 'Παράλια', clone: 'Πισίνα' },
+  { legit: 'Πίτσα', clone: 'Σουβλάκι' },
+  { legit: 'Βενζίνη', clone: 'Πετρέλαιο' },
+  { legit: 'Μήλο', clone: 'Αχλάδι' },
+  { legit: 'Καρέκλα', clone: 'Σκαμπό' },
+  { legit: 'Βιβλίο', clone: 'Τετράδιο' },
+  { legit: 'Ποδήλατο', clone: 'Μηχανάκι' },
+    { legit: 'Βροχή', clone: 'Χιόνι' },
+  { legit: 'Σαπούνι', clone: 'Αφρόλουτρο' },
+  { legit: 'Κινητό', clone: 'Τάμπλετ' },
+  { legit: 'Τηλεόραση', clone: 'Ραδιόφωνο' },
+  { legit: 'Κοτόπουλο', clone: 'Ψάρι' },
+  { legit: 'Ζάχαρη', clone: 'Αλάτι' },
+  { legit: 'Λεωφορείο', clone: 'Νταλίκα' },
+  { legit: 'Φωτογραφία', clone: 'Βίντεο' },
+  { legit: 'Αυτοκίνητο', clone: 'Τρένο' },
+  { legit: 'Μαγιό', clone: 'Σορτσάκι' },
+   { legit: 'Τραπέζι', clone: 'Γραφείο' },
+  { legit: 'Ποτήρι', clone: 'Καλαμάκι' },
+  { legit: 'Καπέλο', clone: 'Σκουφί' },
+  { legit: 'Μπύρα', clone: 'Κρασί' },
+  { legit: 'Ψυγείο', clone: 'Καταψύκτης' },
+  { legit: 'Στεγνωτήρας', clone: 'Πλυντήριο' },
+   { legit: 'Λάμπα', clone: 'Κερί' },
+  { legit: 'Κιθάρα', clone: 'Μπουζούκι' },
+  { legit: 'Ομπρέλα', clone: 'Αδιάβροχο' },
+  { legit: 'Πορτοκάλι', clone: 'Μανταρίνι' },
+  { legit: 'Παπούτσια', clone: 'Παντόφλες' },
+  { legit: 'Βρύση', clone: 'Ντουζιέρα' },
+  { legit: 'Σεντόνι', clone: 'Κουβέρτα' },
+  { legit: 'Κήπος', clone: 'Πάρκο' },
+  { legit: 'Ταινία', clone: 'Σειρά' },
+  { legit: 'Κασετίνα', clone: 'Τσαντάκι' },
+  { legit: 'Πιρούνι', clone: 'Κουτάλι' },
+  { legit: 'Μολύβι', clone: 'Στυλό' },
+  { legit: 'Σανίδα', clone: 'Ράφι' },
+  { legit: 'Παγωτό', clone: 'Γρανίτα' },
+  { legit: 'Μπλούζα', clone: 'Πουκάμισο' },
+   { legit: 'Δέντρο', clone: 'Θάμνος' },
+  { legit: 'Καραμέλα', clone: 'Σοκολάτα' },
+  { legit: 'Φούρνος', clone: 'Μάτι Κουζίνας' },
+  { legit: 'Δρόμος', clone: 'Πεζοδρόμιο' },
+  { legit: 'Καφενείο', clone: 'Μπαρ' },
+  { legit: 'Πίνακας', clone: 'Καθρέφτης' },
+  { legit: 'Φάντα Αναψυκτικό', clone: 'Κόκα κόλα' },
+  { legit: 'Γιαούρτι', clone: 'Γάλα' },
+  { legit: 'Στυλό', clone: 'Μαρκαδόρος' },
+  { legit: 'Παντελόνι', clone: 'Σορτς' },
+  { legit: 'Κουτάβι', clone: 'Γατάκι' },
+  { legit: 'Τσουρέκι', clone: 'Κέικ' },
+   { legit: 'Μπανάνα', clone: 'Ανανάς' }, 
+  { legit: 'Μπουφάν', clone: 'Ζακέτα' },
+  { legit: 'Λεμόνι', clone: 'Λάιμ' },
+  { legit: 'Θάλασσα', clone: 'Λίμνη' },
+  { legit: 'Λιοντάρι', clone: 'Τίγρης' },
+  { legit: 'Καρχαρίας', clone: 'Κροκόδειλος' },
+{ legit: 'Κουκουβάγια', clone: 'Γεράκι' },
   
 
 ];
@@ -296,17 +296,17 @@ function checkWinCondition(lobby: Lobby): Lobby {
   const alive = lobby.players.filter((p) => !p.isEliminated);
 
   const anyUnderOrMr = alive.some(
-    (p) => p.role === 'undercover' || p.role === 'mrwhite'
+    (p) => p.role === 'clone' || p.role === 'blind'
   );
-  const anyCivilians = alive.some((p) => p.role === 'civilian');
+  const anylegits = alive.some((p) => p.role === 'legit');
 
-  if (!anyUnderOrMr && anyCivilians) {
+  if (!anyUnderOrMr && anylegits) {
     lobby.status = 'finished';
-    lobby.winner = 'civilians';
-  } else if (!anyCivilians && anyUnderOrMr) {
+    lobby.winner = 'legits';
+  } else if (!anylegits && anyUnderOrMr) {
     lobby.status = 'finished';
-    lobby.winner = 'undercovers';
-  } else if (!anyCivilians && !anyUnderOrMr) {
+    lobby.winner = 'clones';
+  } else if (!anylegits && !anyUnderOrMr) {
     lobby.status = 'finished';
     lobby.winner = null;
   }
@@ -344,7 +344,7 @@ export async function createLobby(
     settings,
     status: 'waiting',
     winner: null,
-    pendingMrWhiteId: null,
+    pendingblindId: null,
     usedWordIndices: [],
   };
 
@@ -388,9 +388,9 @@ export async function startGame(code: string): Promise<Lobby | null> {
   if (lobby.status !== 'waiting') return lobby;
 
   const totalRoles =
-    lobby.settings.civilians +
-    lobby.settings.undercovers +
-    lobby.settings.mrWhites;
+    lobby.settings.legits +
+    lobby.settings.clones +
+    lobby.settings.blinds;
 
   if (totalRoles !== lobby.players.length) {
     throw new Error('Lobby is not full');
@@ -424,9 +424,9 @@ export async function startGame(code: string): Promise<Lobby | null> {
   lobby.usedWordIndices.push(chosenIndex);
 
   const roles: Role[] = [
-    ...Array(lobby.settings.civilians).fill('civilian' as Role),
-    ...Array(lobby.settings.undercovers).fill('undercover' as Role),
-    ...Array(lobby.settings.mrWhites).fill('mrwhite' as Role),
+    ...Array(lobby.settings.legits).fill('legit' as Role),
+    ...Array(lobby.settings.clones).fill('clone' as Role),
+    ...Array(lobby.settings.blinds).fill('blind' as Role),
   ];
 
   // Shuffle roles
@@ -438,9 +438,9 @@ export async function startGame(code: string): Promise<Lobby | null> {
   lobby.players = lobby.players.map((p, idx) => {
     const role = roles[idx];
     let word: string | null = null;
-    if (role === 'civilian') word = pair.civilian;
-    if (role === 'undercover') word = pair.undercover;
-    if (role === 'mrwhite') word = null;
+    if (role === 'legit') word = pair.legit;
+    if (role === 'clone') word = pair.clone;
+    if (role === 'blind') word = null;
 
     return {
       ...p,
@@ -451,10 +451,10 @@ export async function startGame(code: string): Promise<Lobby | null> {
   });
 
   lobby.status = 'started';
-  lobby.civilianWord = pair.civilian;
-  lobby.undercoverWord = pair.undercover;
+  lobby.legitWord = pair.legit;
+  lobby.cloneWord = pair.clone;
   lobby.winner = null;
-  lobby.pendingMrWhiteId = null;
+  lobby.pendingblindId = null;
 
   // Random speaking order for this game
   const shuffled = [...lobby.players];
@@ -475,12 +475,12 @@ export async function eliminatePlayer(
   code: string,
   hostId: string,
   targetPlayerId: string
-): Promise<{ lobby: Lobby; mrWhiteNeedsGuess: boolean } | null> {
+): Promise<{ lobby: Lobby; blindNeedsGuess: boolean } | null> {
   const lobby = await loadLobby(code);
   if (!lobby) return null;
 
   if (lobby.hostId !== hostId) return null;
-  if (lobby.status !== 'started' && lobby.status !== 'mrwhite_guess') {
+  if (lobby.status !== 'started' && lobby.status !== 'blind_guess') {
     return null;
   }
 
@@ -489,7 +489,7 @@ export async function eliminatePlayer(
 
   if (target.isEliminated) {
     await saveLobby(lobby);
-    return { lobby, mrWhiteNeedsGuess: false };
+    return { lobby, blindNeedsGuess: false };
   }
 
   // Mark eliminated
@@ -498,21 +498,21 @@ export async function eliminatePlayer(
   // Re-compute speaking order for alive players
   recomputeTalkOrder(lobby);
 
-  let mrWhiteNeedsGuess = false;
+  let blindNeedsGuess = false;
 
-  if (target.role === 'mrwhite') {
+  if (target.role === 'blind') {
     // Mr White gets a guess when he is executed
-    lobby.status = 'mrwhite_guess';
-    lobby.pendingMrWhiteId = target.id;
-    mrWhiteNeedsGuess = true;
+    lobby.status = 'blind_guess';
+    lobby.pendingblindId = target.id;
+    blindNeedsGuess = true;
   } else {
-    lobby.pendingMrWhiteId = null;
+    lobby.pendingblindId = null;
     // Check for auto-win or Mr White special rule (2 alive -> guess)
     applyAutoWin(lobby);
   }
 
   await saveLobby(lobby);
-  return { lobby, mrWhiteNeedsGuess };
+  return { lobby, blindNeedsGuess };
 }
 
 export async function kickFromLobby(
@@ -546,8 +546,8 @@ export async function kickFromLobby(
   return lobby;
 }
 
-// Mr White guess (used by /api/mrwhite-guess)
-export async function submitMrWhiteGuess(
+// Mr White guess (used by /api/blind-guess)
+export async function submitblindGuess(
   code: string,
   playerId: string,
   guess: string
@@ -555,15 +555,15 @@ export async function submitMrWhiteGuess(
   const lobby = await loadLobby(code);
   if (!lobby) return null;
 
-  if (lobby.status !== 'mrwhite_guess') return null;
-  if (lobby.pendingMrWhiteId !== playerId) return null;
+  if (lobby.status !== 'blind_guess') return null;
+  if (lobby.pendingblindId !== playerId) return null;
 
   const player = lobby.players.find((p) => p.id === playerId);
   if (!player) return null;
 
-  const civilianWord = lobby.civilianWord ?? '';
+  const legitWord = lobby.legitWord ?? '';
   const normalizedGuess = guess.trim().toLowerCase();
-  const normalizedWord = civilianWord.trim().toLowerCase();
+  const normalizedWord = legitWord.trim().toLowerCase();
 
   if (!normalizedWord) return null;
 
@@ -574,8 +574,8 @@ export async function submitMrWhiteGuess(
   if (normalizedGuess === normalizedWord) {
     // ✅ Correct: Mr White wins instantly
     lobby.status = 'finished';
-    lobby.winner = 'mrwhite';
-    lobby.pendingMrWhiteId = null;
+    lobby.winner = 'blind';
+    lobby.pendingblindId = null;
     console.log('[GAME] Mr White guessed correctly:', guess);
   } else {
     // ❌ Wrong: Mr White is out, game continues / auto-win check
@@ -583,11 +583,11 @@ export async function submitMrWhiteGuess(
       '[GAME] Mr White guess wrong',
       guess,
       'target=',
-      civilianWord
+      legitWord
     );
 
     player.isEliminated = true;
-    lobby.pendingMrWhiteId = null;
+    lobby.pendingblindId = null;
     lobby.status = 'started';
 
     // He's definitely out now; recompute talk order and apply auto win
@@ -610,9 +610,9 @@ export async function resetLobby(
   // Go back to pre-game state but keep all players in the lobby
   lobby.status = 'waiting';
   lobby.winner = null;
-  lobby.pendingMrWhiteId = null;
-  lobby.civilianWord = undefined;
-  lobby.undercoverWord = undefined;
+  lobby.pendingblindId = null;
+  lobby.legitWord = undefined;
+  lobby.cloneWord = undefined;
 
   // Keep usedWordIndices so this lobby never repeats word pairs
   // Keep all players, just clear their game state
@@ -642,14 +642,14 @@ export async function updateLobbySettings(
   if (lobby.status !== 'waiting') return null;
 
   // Basic safety: ensure non-negative integers
-  const civ = Math.max(0, Number(settings.civilians || 0));
-  const und = Math.max(0, Number(settings.undercovers || 0));
-  const mrw = Math.max(0, Number(settings.mrWhites || 0));
+  const civ = Math.max(0, Number(settings.legits || 0));
+  const und = Math.max(0, Number(settings.clones || 0));
+  const mrw = Math.max(0, Number(settings.blinds || 0));
 
   lobby.settings = {
-    civilians: civ,
-    undercovers: und,
-    mrWhites: mrw,
+    legits: civ,
+    clones: und,
+    blinds: mrw,
   };
 
   console.log(

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 type LobbyStatus = 'waiting' | 'started' | 'mrwhite_guess' | 'finished';
-type Winner = 'civilians' | 'undercovers' | 'mrwhite' | null;
+type Winner = 'legits' | 'clones' | 'blinds' | null;
 
 type LobbyPlayer = {
   id: string;
@@ -22,9 +22,9 @@ type LobbySummary = {
   winner: Winner;
   pendingMrWhiteId: string | null;
   settings: {
-    civilians: number;
-    undercovers: number;
-    mrWhites: number;
+    legits: number;
+    clones: number;
+    blinds: number;
   };
   players: LobbyPlayer[];
 };
@@ -35,7 +35,7 @@ type MyState = {
   player: {
     id: string;
     name: string;
-    role?: 'civilian' | 'undercover' | 'mrwhite';
+    role?: 'legit' | 'clone' | 'blind';
     word: string | null;
     isHost: boolean;
     isEliminated: boolean;
@@ -63,9 +63,9 @@ export default function LobbyClient({
   const [resetLoading, setResetLoading] = useState(false);
   const [startLoading, setStartLoading] = useState(false);
 
-  const [civilians, setCivilians] = useState<number | null>(null);
-  const [undercovers, setUndercovers] = useState<number | null>(null);
-  const [mrWhites, setMrWhites] = useState<number | null>(null);
+  const [legits, setLegits] = useState<number | null>(null);
+  const [clones, setClones] = useState<number | null>(null);
+  const [blinds, setBlinds] = useState<number | null>(null);
   const [saveSettingsLoading, setSaveSettingsLoading] = useState(false);
 
   const [copied, setCopied] = useState(false);
@@ -75,9 +75,9 @@ export default function LobbyClient({
 
   useEffect(() => {
     if (!lobby) return;
-    setCivilians(lobby.settings.civilians);
-    setUndercovers(lobby.settings.undercovers);
-    setMrWhites(lobby.settings.mrWhites);
+    setLegits(lobby.settings.legits);
+    setClones(lobby.settings.clones);
+    setBlinds(lobby.settings.blinds);
   }, [lobby?.code]);
 
   async function fetchLobby() {
@@ -145,9 +145,9 @@ export default function LobbyClient({
   async function handleSaveSettings() {
     if (!isHost || !lobby || !myState) return;
 
-    const civ = Math.max(0, Number(civilians ?? 0));
-    const und = Math.max(0, Number(undercovers ?? 0));
-    const mrw = Math.max(0, Number(mrWhites ?? 0));
+    const leg = Math.max(0, Number(legits ?? 0));
+    const clo = Math.max(0, Number(clones ?? 0));
+    const bli = Math.max(0, Number(blinds ?? 0));
 
     setError(null);
     setSaveSettingsLoading(true);
@@ -158,9 +158,9 @@ export default function LobbyClient({
         body: JSON.stringify({
           lobbyCode,
           hostId: myState.player.id,
-          civilians: civ,
-          undercovers: und,
-          mrWhites: mrw,
+          legits: leg,
+          clones: clo,
+          blinds: bli,
         }),
       });
 
@@ -326,37 +326,37 @@ export default function LobbyClient({
 
   // Visible role text:
   // - Mr White sees "Mr White"
-  // - Civilians & Undercovers see "Civilian / Undercover"
+  // - Legits & Clones see "Legit / Clone"
   // - If role not assigned yet: "Unknown"
   const visibleRoleText =
-    my.role === 'mrwhite'
+    my.role === 'blind'
       ? 'Mr White'
       : my.role
-      ? 'Civilian / Undercover'
+      ? 'Legit / Clone'
       : 'Unknown';
 
   // Role color: only special for Mr White, others neutral
   const roleColorClass =
-    my.role === 'mrwhite' ? 'text-slate-50' : 'text-slate-100';
+    my.role === 'blind' ? 'text-slate-50' : 'text-slate-100';
 
-  // Word color: neutral so it doesn’t reveal civilian vs undercover
+  // Word color: neutral so it doesn’t reveal legit vs clone
   const wordColorClass =
-    my.role === 'mrwhite' ? 'text-slate-50' : 'text-indigo-300';
+    my.role === 'blind' ? 'text-slate-50' : 'text-indigo-300';
 
-  // winner styling (emoji on the RIGHT, civilians = 🍩)
+  // winner styling (emoji on the RIGHT, legits = 🍩)
   let winnerLabel = '';
   let winnerEmoji = '';
   let winnerColor = '';
 
-  if (lobby.winner === 'civilians') {
-    winnerLabel = 'Civilians';
+  if (lobby.winner === 'legits') {
+    winnerLabel = 'Legits';
     winnerEmoji = '🍩';
     winnerColor = 'text-emerald-300';
-  } else if (lobby.winner === 'undercovers') {
-    winnerLabel = 'Undercovers';
+  } else if (lobby.winner === 'clones') {
+    winnerLabel = 'Clones';
     winnerEmoji = '🕵️‍♂️';
     winnerColor = 'text-red-400';
-  } else if (lobby.winner === 'mrwhite') {
+  } else if (lobby.winner === 'blinds') {
     winnerLabel = 'Mr White';
     winnerEmoji = '🥷';
     winnerColor = 'text-slate-50';
@@ -483,30 +483,30 @@ export default function LobbyClient({
 
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
-                <label>Civilians</label>
+                <label>Legits</label>
                 <input
                   type="number"
                   min={0}
-                  value={civilians ?? 0}
-                  onChange={(e) => setCivilians(Number(e.target.value))}
+                  value={legits ?? 0}
+                  onChange={(e) => setLegits(Number(e.target.value))}
                 />
               </div>
               <div>
-                <label>Undercovers</label>
+                <label>Clones</label>
                 <input
                   type="number"
                   min={0}
-                  value={undercovers ?? 0}
-                  onChange={(e) => setUndercovers(Number(e.target.value))}
+                  value={clones ?? 0}
+                  onChange={(e) => setClones(Number(e.target.value))}
                 />
               </div>
               <div>
-                <label>Mr Whites</label>
+                <label>Blinds</label>
                 <input
                   type="number"
                   min={0}
-                  value={mrWhites ?? 0}
-                  onChange={(e) => setMrWhites(Number(e.target.value))}
+                  value={blinds ?? 0}
+                  onChange={(e) => setBlinds(Number(e.target.value))}
                 />
               </div>
             </div>
@@ -565,7 +565,7 @@ export default function LobbyClient({
               <span
                 className={`font-semibold text-base sm:text-xl tracking-wide ${wordColorClass}`}
               >
-                {my.word ?? (my.role === 'mrwhite' ? 'None' : '-')}
+                {my.word ?? (my.role === 'blind' ? 'None' : '-') }
               </span>
             </p>
           </div>
@@ -592,14 +592,14 @@ export default function LobbyClient({
           )}
 
           {status === 'mrwhite_guess' &&
-            my.role === 'mrwhite' &&
+            my.role === 'blind' &&
             isPendingMrWhite && (
               <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 px-4 py-3 space-y-2">
                 <p className="text-[0.7rem] uppercase text-slate-400 tracking-wide">
                   Mr White guess
                 </p>
                 <p className="text-sm text-slate-200">
-                  Try to guess the civilians&apos; word. If you&apos;re
+                  Try to guess the legits' word. If you're
                   correct, you win immediately.
                 </p>
                 <div className="flex flex-col gap-2 sm:flex-row">
