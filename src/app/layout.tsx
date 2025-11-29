@@ -4,10 +4,10 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'LazyDonut Clone',
   description: 'Clone online by LazyDonut.',
-  metadataBase: new URL('https://lazydonutspyroom.vercel.app/'), 
+  metadataBase: new URL('https://lazydonutclone.vercel.app/'), 
   openGraph: {
     title: 'LazyDonut Clone',
-    description: 'SpyRoom online by Clone.',
+    description: 'Clone online by LazyDonut.',
     url: 'https://lazydonutclone.vercel.app/',
     siteName: 'LazyDonut Clone',
     images: [
