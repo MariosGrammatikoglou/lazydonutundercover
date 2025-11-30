@@ -229,6 +229,44 @@ const WORD_PAIRS: Array<{ legit: string; clone: string }> = [
 
 ];
 
+const WORD_PAIRS_ENGLISH: Array<{ legit: string; clone: string }> = [
+  { legit: 'Apple', clone: 'Orange' },
+  { legit: 'Car', clone: 'Truck' },
+  { legit: 'Dog', clone: 'Cat' },
+  { legit: 'Sun', clone: 'Moon' },
+  { legit: 'Coffee', clone: 'Tea' },
+  { legit: 'Water', clone: 'Soda' },
+  { legit: 'Ice', clone: 'Fire' },
+  { legit: 'Bird', clone: 'Fish' },
+  { legit: 'Mountain', clone: 'Valley' },
+  { legit: 'Book', clone: 'Magazine' },
+  { legit: 'Pen', clone: 'Pencil' },
+  { legit: 'Shirt', clone: 'Pants' },
+  { legit: 'Computer', clone: 'Laptop' },
+  { legit: 'Flower', clone: 'Tree' },
+  { legit: 'Clock', clone: 'Watch' },
+  { legit: 'Phone', clone: 'Tablet' },
+  { legit: 'Light', clone: 'Dark' },
+  { legit: 'Ocean', clone: 'Lake' },
+  { legit: 'Bread', clone: 'Butter' },
+  { legit: 'Pizza', clone: 'Burger' },
+  { legit: 'Chocolate', clone: 'Vanilla' },
+  { legit: 'Shampoo', clone: 'Conditioner' },
+  { legit: 'Candle', clone: 'Lamp' },
+  { legit: 'Sweater', clone: 'Jacket' },
+  { legit: 'Cake', clone: 'Cookie' },
+  { legit: 'Key', clone: 'Lock' },
+  { legit: 'Flower', clone: 'Rose' },
+  { legit: 'Table', clone: 'Chair' },
+  { legit: 'Bicycle', clone: 'Scooter' },
+  { legit: 'Glass', clone: 'Plastic' },
+  { legit: 'Shoes', clone: 'Sandals' },
+  { legit: 'Bread', clone: 'Rolls' },
+  { legit: 'Light', clone: 'Bulb' },
+  { legit: 'Hockey', clone: 'Football' },
+];
+
+
 async function loadLobby(code: string): Promise<Lobby | null> {
   await initDb();
 
@@ -323,7 +361,8 @@ export async function getLobby(code: string): Promise<Lobby | null> {
 
 export async function createLobby(
   hostName: string,
-  settings: LobbySettings
+  settings: LobbySettings,
+  language: 'greek' | 'english' // Add language as a parameter
 ): Promise<{ lobby: Lobby; player: Player; hostSecret: string }> {
   const code = await generateUniqueLobbyCode();
   const hostSecret = generateHostSecret();
@@ -336,6 +375,23 @@ export async function createLobby(
     lastSeen: Date.now(),
   };
 
+  // Select the correct word list based on the language
+  let selectedWordPairs: Array<{ legit: string; clone: string }> = [];
+  if (language === 'greek') {
+    selectedWordPairs = WORD_PAIRS; // Greek word pairs
+  } else if (language === 'english') {
+    selectedWordPairs = WORD_PAIRS_ENGLISH; // English word pairs
+  } else {
+    throw new Error('Invalid language selected');
+  }
+
+  // Pick a random word pair from the selected language
+  const availableIndices = selectedWordPairs.map((_, i) => i).filter(
+    (i) => !lobby.usedWordIndices.includes(i)
+  );
+  const chosenIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+  const pair = selectedWordPairs[chosenIndex];
+
   const lobby: Lobby = {
     code,
     hostId: host.id,
@@ -345,13 +401,14 @@ export async function createLobby(
     status: 'waiting',
     winner: null,
     pendingblindId: null,
-    usedWordIndices: [],
+    usedWordIndices: [chosenIndex], // Track used word pair index
   };
 
   await saveLobby(lobby);
 
   return { lobby, player: host, hostSecret };
 }
+
 
 export async function joinLobby(
   code: string,
