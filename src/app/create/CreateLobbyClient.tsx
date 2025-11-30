@@ -20,16 +20,11 @@ export default function CreateLobbyClient({
   const [blinds, setBlinds] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const [hostInfo, setHostInfo] = useState<HostInfo | null>(null);
   const [copying, setCopying] = useState(false);
-  const [language, setLanguage] = useState<'greek' | 'english'>('greek'); // Default to Greek
 
   const total = legits + clones + blinds;
-
-  // Handle Language change
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setLanguage(e.target.value as 'greek' | 'english');
-  };
 
   async function handleCreate() {
     setError(null);
@@ -41,10 +36,9 @@ export default function CreateLobbyClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: defaultUsername,
-          legit: legits,
-          clone: clones,
-          blind: blinds,
-          language: language, // Send language choice to backend
+          legit: legits,    
+          clone: clones,    
+          blind: blinds,    
         }),
       });
 
@@ -151,21 +145,6 @@ export default function CreateLobbyClient({
                 No word, wins by guessing.
               </p>
             </div>
-          </section>
-
-          <section className="mt-3">
-            <label>Language</label>
-            <select
-              value={language}
-              onChange={handleLanguageChange}
-              className="bg-slate-800 text-slate-100 border border-slate-700 p-2 rounded-lg"
-            >
-              <option value="greek">Greek</option>
-              <option value="english">English</option>
-            </select>
-            <p className="mt-1 text-[0.7rem] text-slate-500">
-              Choose the language for words.
-            </p>
           </section>
 
           <p className="text-xs text-slate-400">

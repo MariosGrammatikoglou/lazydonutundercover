@@ -3,7 +3,7 @@ import { createLobby } from '@/lib/gameStore';
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({} as any));
-  const { username, legit, clones, blinds, language } = body ?? {};
+  const { username, legit, clones, blinds } = body ?? {};
 
   const safeUsername =
     typeof username === 'string' && username.trim().length > 0
@@ -30,11 +30,9 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Pass the language selected by the user
     const { lobby, player, hostSecret } = await createLobby(
       safeUsername,
-      settings,
-      language // Pass the language (either 'greek' or 'english')
+      settings
     );
 
     return NextResponse.json({
