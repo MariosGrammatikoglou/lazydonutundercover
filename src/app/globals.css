@@ -252,7 +252,7 @@ input {
 }
 
 
-/* hover: only the TOP button moves; under + eyes stay put */
+/* hover: only the TOP button moves; under + eyes stay put */s
 .fun-button-wrapper:hover .fun-button-top {
   transform: translate(-4px, -10px) rotate(-7deg);
   box-shadow: none !important;
