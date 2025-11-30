@@ -19,7 +19,7 @@ export async function GET(
   code: lobby.code,
   status: lobby.status,
   winner: lobby.winner,
-    pendingblindId: lobby.pendingblindId ?? null, // Updated property name
+  pendingMrWhiteId: lobby.pendingMrWhiteId ?? null, // 👈
   settings: lobby.settings,
   players: lobby.players.map((p) => ({
     id: p.id,

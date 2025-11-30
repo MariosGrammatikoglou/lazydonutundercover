@@ -1,3 +1,4 @@
+// src/app/lobby/[code]/page.tsx
 import LobbyClient from './LobbyClient';
 
 type LobbyPageProps = {

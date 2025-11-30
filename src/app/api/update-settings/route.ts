@@ -3,7 +3,7 @@ import { updateLobbySettings } from '@/lib/gameStore';
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({} as any));
-  const { lobbyCode, hostId, legit, clones, blinds } = body ?? {};
+  const { lobbyCode, hostId, civilians, undercovers, mrWhites } = body ?? {};
 
   if (!lobbyCode || !hostId) {
     return NextResponse.json(
@@ -13,9 +13,9 @@ export async function POST(req: Request) {
   }
 
   const lobby = await updateLobbySettings(lobbyCode, hostId, {
-    legits: Number(legit ?? 0),
-    clones: Number(clones ?? 0),
-    blinds: Number(blinds ?? 0),
+    civilians: Number(civilians ?? 0),
+    undercovers: Number(undercovers ?? 0),
+    mrWhites: Number(mrWhites ?? 0),
   });
 
   if (!lobby) {

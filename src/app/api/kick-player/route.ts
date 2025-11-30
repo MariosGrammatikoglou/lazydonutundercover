@@ -23,6 +23,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    mrWhiteNeedsGuess: result.blindNeedsGuess,
+    mrWhiteNeedsGuess: result.mrWhiteNeedsGuess,
   });
 }

@@ -15,16 +15,16 @@ export default function CreateLobbyClient({
   defaultUsername: string;
 }) {
   const router = useRouter();
-  const [legits, setLegits] = useState(3);
-  const [clones, setClones] = useState(1);
-  const [blinds, setBlinds] = useState(0);
+  const [civilians, setCivilians] = useState(3);
+  const [undercovers, setUndercovers] = useState(1);
+  const [mrWhites, setMrWhites] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [hostInfo, setHostInfo] = useState<HostInfo | null>(null);
   const [copying, setCopying] = useState(false);
 
-  const total = legits + clones + blinds;
+  const total = civilians + undercovers + mrWhites;
 
   async function handleCreate() {
     setError(null);
@@ -36,9 +36,9 @@ export default function CreateLobbyClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: defaultUsername,
-          legit: legits,    
-          clone: clones,    
-          blind: blinds,    
+          civilians,
+          undercovers,
+          mrWhites,
         }),
       });
 
@@ -110,36 +110,36 @@ export default function CreateLobbyClient({
 
           <section className="grid gap-3 sm:grid-cols-3">
             <div>
-              <label>Legits</label>
+              <label>Civilians</label>
               <input
                 type="number"
                 min={0}
-                value={legits}
-                onChange={(e) => setLegits(Number(e.target.value))}
+                value={civilians}
+                onChange={(e) => setCivilians(Number(e.target.value))}
               />
               <p className="mt-1 text-[0.7rem] text-slate-500">
                 They know the real word.
               </p>
             </div>
             <div>
-              <label>Clones</label>
+              <label>Undercovers</label>
               <input
                 type="number"
                 min={0}
-                value={clones}
-                onChange={(e) => setClones(Number(e.target.value))}
+                value={undercovers}
+                onChange={(e) => setUndercovers(Number(e.target.value))}
               />
               <p className="mt-1 text-[0.7rem] text-slate-500">
                 Similar word, trying to blend in.
               </p>
             </div>
             <div>
-              <label>Blinds</label>
+              <label>Mr Whites</label>
               <input
                 type="number"
                 min={0}
-                value={blinds}
-                onChange={(e) => setBlinds(Number(e.target.value))}
+                value={mrWhites}
+                onChange={(e) => setMrWhites(Number(e.target.value))}
               />
               <p className="mt-1 text-[0.7rem] text-slate-500">
                 No word, wins by guessing.
@@ -212,6 +212,7 @@ export default function CreateLobbyClient({
                 className="button-secondary inline-flex items-center gap-2"
               >
                 <span>{copying ? 'Copied!' : 'Copy code'}</span>
+         
               </button>
 
               <button
@@ -220,6 +221,7 @@ export default function CreateLobbyClient({
                 className="button-primary inline-flex items-center gap-2"
               >
                 <span>Enter lobby</span>
+            
               </button>
             </div>
           </div>
