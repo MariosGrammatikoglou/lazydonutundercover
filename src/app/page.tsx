@@ -231,7 +231,7 @@ export default function HomePage() {
             <p className="mt-3 text-sm text-slate-400">
               <ul className="mt-2">
                 <li>
-                  <strong>Legits:</strong> Their goal is to identify the Undercovers and Mr Whites and execute them.
+                  <strong>Civilians:</strong> Their goal is to identify the Undercovers and Mr Whites and execute them.
                 </li>
                 <li>
                   <strong>Undercovers:</strong> Their goal is to understand that they have not the correct word. They
