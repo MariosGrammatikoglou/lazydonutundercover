@@ -19,14 +19,14 @@ export async function GET(
   code: lobby.code,
   status: lobby.status,
   winner: lobby.winner,
-  pendingMrWhiteId: lobby.pendingMrWhiteId ?? null, // 👈
+  pendingBlindId: lobby.pendingBlindId ?? null, 
   settings: lobby.settings,
   players: lobby.players.map((p) => ({
     id: p.id,
     name: p.name,
     isHost: p.isHost,
     isEliminated: p.isEliminated,
-    order: p.talkOrder ?? null, // 👈 for speaking order
+    order: p.talkOrder ?? null, 
   })),
 });
 

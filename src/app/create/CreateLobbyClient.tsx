@@ -15,16 +15,16 @@ export default function CreateLobbyClient({
   defaultUsername: string;
 }) {
   const router = useRouter();
-  const [civilians, setCivilians] = useState(3);
-  const [undercovers, setUndercovers] = useState(1);
-  const [mrWhites, setMrWhites] = useState(0);
+  const [legits, setLegits] = useState(3);
+  const [clones, setClones] = useState(1);
+  const [blinds, setBlinds] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [hostInfo, setHostInfo] = useState<HostInfo | null>(null);
   const [copying, setCopying] = useState(false);
 
-  const total = civilians + undercovers + mrWhites;
+  const total = legits + clones + blinds;
 
   async function handleCreate() {
     setError(null);
@@ -36,9 +36,9 @@ export default function CreateLobbyClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: defaultUsername,
-          civilians,
-          undercovers,
-          mrWhites,
+          legits,
+          clones,
+          blinds,
         }),
       });
 
@@ -110,36 +110,36 @@ export default function CreateLobbyClient({
 
           <section className="grid gap-3 sm:grid-cols-3">
             <div>
-              <label>Civilians</label>
+              <label>Legits</label>
               <input
                 type="number"
                 min={0}
-                value={civilians}
-                onChange={(e) => setCivilians(Number(e.target.value))}
+                value={legits}
+                onChange={(e) => setLegits(Number(e.target.value))}
               />
               <p className="mt-1 text-[0.7rem] text-slate-500">
                 They know the real word.
               </p>
             </div>
             <div>
-              <label>Undercovers</label>
+              <label>Clones</label>
               <input
                 type="number"
                 min={0}
-                value={undercovers}
-                onChange={(e) => setUndercovers(Number(e.target.value))}
+                value={clones}
+                onChange={(e) => setClones(Number(e.target.value))}
               />
               <p className="mt-1 text-[0.7rem] text-slate-500">
                 Similar word, trying to blend in.
               </p>
             </div>
             <div>
-              <label>Mr Whites</label>
+              <label>Blinds</label>
               <input
                 type="number"
                 min={0}
-                value={mrWhites}
-                onChange={(e) => setMrWhites(Number(e.target.value))}
+                value={blinds}
+                onChange={(e) => setBlinds(Number(e.target.value))}
               />
               <p className="mt-1 text-[0.7rem] text-slate-500">
                 No word, wins by guessing.

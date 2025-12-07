@@ -23,7 +23,6 @@ export async function POST(req: Request) {
 
   const result = await getPlayerState(lobbyCode, playerId);
   if (!result) {
-    // Player might have been kicked or lobby deleted -> return harmless 200
     return NextResponse.json({
       lobbyStatus: 'waiting',
       winner: null,
