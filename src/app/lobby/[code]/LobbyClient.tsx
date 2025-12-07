@@ -566,63 +566,75 @@ export default function LobbyClient({
         </section>
 
         {/* CONTROLS / GUESS / RESET */}
-        <section className="flex flex-col gap-3">
-          {isHost && status === 'waiting' && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={handleStartGame}
-                disabled={startLoading}
-                className="button-primary"
-              >
-                {startLoading ? 'Starting…' : 'Start game'}
-              </button>
-              <Link
-                href="/"
-                className="button-secondary inline-flex items-center gap-1"
-              >
-                Back to home <span>🏠</span>
-              </Link>
-            </div>
-          )}
+       <section className="flex flex-col gap-3">
+  {/* This section handles when the host is waiting for the game to start */}
+  {isHost && status === 'waiting' && (
+    <div className="flex flex-wrap gap-2">
+      <button
+        onClick={handleStartGame}
+        disabled={startLoading}
+        className="button-primary"
+      >
+        {startLoading ? 'Starting…' : 'Start game'}
+      </button>
+      <Link
+        href="/"
+        className="button-secondary inline-flex items-center gap-1"
+      >
+        Back to home <span>🏠</span>
+      </Link>
+    </div>
+  )}
 
-          {status === 'blind_guess' &&
-            my.role === 'blind' &&
-            isPendingBlind && (
-              <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 px-4 py-3 space-y-2">
-                <p className="text-[0.7rem] uppercase text-slate-400 tracking-wide">
-                  Blind guess
-                </p>
-                <p className="text-sm text-slate-200">
-                  Try to guess the legits&apos; word. If you&apos;re
-                  correct, you win immediately.
-                </p>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <input
-                    value={blindGuess}
-                    onChange={(e) => setBlindGuess(e.target.value)}
-                    placeholder="Type your guess…"
-                  />
-                  <button
-                    onClick={handleBlindGuess}
-                    disabled={blindSubmitting}
-                    className="button-primary sm:self-stretch"
-                  >
-                    {blindSubmitting ? 'Submitting…' : 'Submit guess'}
-                  </button>
-                </div>
-              </div>
-            )}
+  {/* This section handles when the "blind_guess" phase is active for the blind player */}
+  {status === 'blind_guess' && my.role === 'blind' && isPendingBlind && (
+    <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 px-4 py-3 space-y-2">
+      <p className="text-[0.7rem] uppercase text-slate-400 tracking-wide">
+        Blind guess
+      </p>
+      <p className="text-sm text-slate-200">
+        Try to guess the legits&apos; word. If you&apos;re correct, you win immediately.
+      </p>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          value={blindGuess}
+          onChange={(e) => setBlindGuess(e.target.value)}
+          placeholder="Type your guess…"
+        />
+        <button
+          onClick={handleBlindGuess}
+          disabled={blindSubmitting}
+          className="button-primary sm:self-stretch"
+        >
+          {blindSubmitting ? 'Submitting…' : 'Submit guess'}
+        </button>
+      </div>
+    </div>
+  )}
 
-          {isHost && status === 'finished' && (
-            <button
-              onClick={handleReset}
-              disabled={resetLoading}
-              className="button-secondary self-start"
-            >
-              {resetLoading ? 'Resetting…' : 'Play again (same lobby)'}
-            </button>
-          )}
-        </section>
+  {/* This section makes the "Play again" button always visible once the game starts */}
+  {isHost && status === 'started' && (
+    <button
+      onClick={handleReset}
+      disabled={resetLoading}
+      className="button-secondary self-start"
+    >
+      {resetLoading ? 'Resetting…' : 'Play again'}
+    </button>
+  )}
+
+  {/* This section handles the "Play again" button when the game finishes */}
+  {isHost && status === 'finished' && (
+    <button
+      onClick={handleReset}
+      disabled={resetLoading}
+      className="button-secondary self-start"
+    >
+      {resetLoading ? 'Resetting…' : 'Play again (same lobby)'}
+    </button>
+  )}
+</section>
+
       </div>
     </main>
   );
